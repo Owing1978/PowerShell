@@ -545,15 +545,14 @@ namespace System.Management.Automation
             Exception exceptionToRethrow = null;
             try
             {
-                // If this process is being run standalone, tell the host, which might want
-                // to save off the window title or other such state as might be tweaked by
-                // the native process
+                // Before start the executable, tell the host, which might want to save off the
+                // window title or other such state as might be tweaked by the native process.
+                Command.Context.EngineHostInterface.NotifyBeginApplication();
+                _hasNotifiedBeginApplication = true;
+
                 if (_runStandAlone)
                 {
-                    this.Command.Context.EngineHostInterface.NotifyBeginApplication();
-                    _hasNotifiedBeginApplication = true;
-
-                    // Also, store the Raw UI coordinates so that we can scrape the screen after
+                    // Store the Raw UI coordinates so that we can scrape the screen after
                     // if we are transcribing.
                     if (_isTranscribing && (s_supportScreenScrape == true))
                     {
@@ -884,7 +883,7 @@ namespace System.Management.Automation
                         errorMsg,
                         errorId);
 
-                    var errorRecord = new ErrorRecord(exception, errorId, ErrorCategory.NotSpecified, targetObject: NativeCommandName);
+                    var errorRecord = new ErrorRecord(exception, errorId, ErrorCategory.NotSpecified, targetObject: Path);
                     this.commandRuntime._WriteErrorSkipAllowCheck(errorRecord);
                 }
             }
@@ -1106,18 +1105,6 @@ namespace System.Management.Automation
                 return false;
             }
 
-            // The function 'SHGetFileInfo()' does not understand reparse points and returns 0 ("non exe or error")
-            // for a symbolic link file, so we try to get the immediate link target in that case.
-            // Why not get the final target (use 'returnFinalTarget: true')? Because:
-            //  1. When starting a process on Windows, if the 'FileName' is a symbolic link, the immediate link target will automatically be used,
-            //     but the OS does not do recursive resolution when the immediate link target is also a symbolic link.
-            //  2. Keep the same behavior as before adopting the 'LinkTarget' and 'ResolveLinkTarget' APIs in .NET 6.
-            string linkTarget = File.ResolveLinkTarget(fileName, returnFinalTarget: false)?.FullName;
-            if (linkTarget is not null)
-            {
-                fileName = linkTarget;
-            }
-
             SHFILEINFO shinfo = new SHFILEINFO();
             IntPtr type = SHGetFileInfo(fileName, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_EXETYPE);
 
@@ -1178,7 +1165,7 @@ namespace System.Management.Automation
             // We need to call 'NotifyEndApplication' as appropriate during cleanup
             if (_hasNotifiedBeginApplication)
             {
-                this.Command.Context.EngineHostInterface.NotifyEndApplication();
+                Command.Context.EngineHostInterface.NotifyEndApplication();
             }
 
             try
