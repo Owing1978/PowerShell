@@ -107,6 +107,18 @@ namespace Microsoft.PowerShell.Commands
 
         #endregion
 
+        #region HTTP Version
+
+        /// <summary>
+        /// Gets or sets the HTTP Version property.
+        /// </summary>
+        [Parameter]
+        [ArgumentToVersionTransformation]
+        [HttpVersionCompletions]
+        public virtual Version HttpVersion { get; set; }
+
+        #endregion
+
         #region Session
         /// <summary>
         /// Gets or sets the Session property.
@@ -1081,6 +1093,11 @@ namespace Microsoft.PowerShell.Commands
             // create the base WebRequest object
             var request = new HttpRequestMessage(httpMethod, requestUri);
 
+            if (HttpVersion is not null)
+            {
+                request.Version = HttpVersion;
+            }
+
             // pull in session data
             if (WebSession.Headers.Count > 0)
             {
@@ -1260,9 +1277,15 @@ namespace Microsoft.PowerShell.Commands
                 }
             }
 
-            // Add the content headers
-            if (request.Content == null)
+            // For other methods like Put where empty content has meaning, we need to fill in the content
+            if (request.Content is null)
             {
+                // If this is a Get request and there is no content, then don't fill in the content as empty content gets rejected by some web services per RFC7230
+                if ((IsStandardMethodSet() && request.Method == HttpMethod.Get && ContentType is null) || (IsCustomMethodSet() && CustomMethod.ToUpperInvariant() == "GET"))
+                {
+                    return;
+                }
+
                 request.Content = new StringContent(string.Empty);
                 request.Content.Headers.Clear();
             }
@@ -1413,6 +1436,7 @@ namespace Microsoft.PowerShell.Commands
                         string reqVerboseMsg = string.Format(
                             CultureInfo.CurrentCulture,
                             WebCmdletStrings.WebMethodInvocationVerboseMsg,
+                            requestWithoutRange.Version,
                             requestWithoutRange.Method,
                             requestWithoutRange.RequestUri,
                             requestContentLength);
@@ -1505,10 +1529,14 @@ namespace Microsoft.PowerShell.Commands
                                 if (request.Content != null)
                                     requestContentLength = request.Content.Headers.ContentLength.Value;
 
-                                string reqVerboseMsg = string.Format(CultureInfo.CurrentCulture,
+                                string reqVerboseMsg = string.Format(
+                                    CultureInfo.CurrentCulture,
                                     WebCmdletStrings.WebMethodInvocationVerboseMsg,
+                                    request.Version,
                                     request.Method,
+                                    request.RequestUri,
                                     requestContentLength);
+
                                 WriteVerbose(reqVerboseMsg);
 
                                 HttpResponseMessage response = GetResponse(client, request, keepAuthorization);
