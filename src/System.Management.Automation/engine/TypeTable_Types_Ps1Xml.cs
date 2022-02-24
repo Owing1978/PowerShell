@@ -676,14 +676,22 @@ namespace System.Management.Automation.Runspaces
                 typeMembers,
                 isOverride: false);
 
-            newMembers.Add(@"Target");
+            newMembers.Add(@"ResolvedTarget");
             AddMember(
                 errors,
                 typeName,
                 new PSCodeProperty(
-                    @"Target",
-                    GetMethodInfo(typeof(Microsoft.PowerShell.Commands.InternalSymbolicLinkLinkCodeMethods), @"GetTarget"),
+                    @"ResolvedTarget",
+                    GetMethodInfo(typeof(Microsoft.PowerShell.Commands.InternalSymbolicLinkLinkCodeMethods), @"ResolvedTarget"),
                     setterCodeReference: null),
+                typeMembers,
+                isOverride: false);
+
+            newMembers.Add(@"Target");
+            AddMember(
+                errors,
+                typeName,
+                new PSAliasProperty(@"Target", @"LinkTarget", conversionType: null),
                 typeMembers,
                 isOverride: false);
 
@@ -804,14 +812,22 @@ namespace System.Management.Automation.Runspaces
                 typeMembers,
                 isOverride: false);
 
-            newMembers.Add(@"Target");
+            newMembers.Add(@"ResolvedTarget");
             AddMember(
                 errors,
                 typeName,
                 new PSCodeProperty(
-                    @"Target",
-                    GetMethodInfo(typeof(Microsoft.PowerShell.Commands.InternalSymbolicLinkLinkCodeMethods), @"GetTarget"),
+                    @"ResolvedTarget",
+                    GetMethodInfo(typeof(Microsoft.PowerShell.Commands.InternalSymbolicLinkLinkCodeMethods), @"ResolvedTarget"),
                     setterCodeReference: null),
+                typeMembers,
+                isOverride: false);
+
+            newMembers.Add(@"Target");
+            AddMember(
+                errors,
+                typeName,
+                new PSAliasProperty(@"Target", @"LinkTarget", conversionType: null),
                 typeMembers,
                 isOverride: false);
 

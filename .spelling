@@ -15,6 +15,7 @@
 about_
 about_debuggers
 about_jobs
+about_Telemetry
 acl
 adamdriscoll
 add-localgroupmember
@@ -96,11 +97,14 @@ bugfix
 build.json
 build.psm1
 bulid
+buildInfoJson
 callmejoebob
 catchable
 cdxml
 celsius
 CentOS
+cgmanifest
+CGManifest
 changelog
 changelog.md
 changelogs
@@ -115,6 +119,7 @@ childitem
 ChrisLGardner
 cimsession
 cimsupport
+ci.psm1
 classlib
 clear-itemproperty
 cloudydino
@@ -132,6 +137,7 @@ CodeFormatter
 codeowner
 codepage
 commanddiscovery
+CommandInvocationIntrinsics
 commandsearch
 CommandSearcher
 comobject
@@ -176,6 +182,7 @@ ctrl
 CurrentCulture
 CustomShellCommands.cs
 DamirAinullin
+DarylGraves
 darquewarrior
 darwinjs
 DateTime
@@ -231,6 +238,7 @@ DotnetRutimeMetadata.json
 dottedscopes
 downlevel
 dropdown
+dwtaber
 e.g.
 ebook
 ebooks
@@ -267,6 +275,7 @@ export-formatdata
 export-modulemember
 failurecode
 failurecount
+farmerau
 fbehrens
 felixfbecker
 ffeldhaus
@@ -284,6 +293,7 @@ folderName
 foreach
 formatfileloading
 formatviewbinding
+FormatWideCommand
 Francisco-Gamino
 frontload
 fullclr
@@ -349,6 +359,7 @@ hackathons
 HashSet
 hashtable
 hashtables
+hayhay27
 helloworld.ps1
 helpproviderwithcache
 helpproviderwithfullcache
@@ -366,6 +377,7 @@ httpbin's
 https
 hubuk
 hvitved
+i3arnon
 i.e.
 ico
 idera
@@ -423,8 +435,10 @@ jwmoss
 kanjibates
 kasper3
 katacoda
+Kellen-Stuart
 kevinmarquette
 kevinoid
+KevRitchie
 keyfileparameter
 keyhandler
 khansen00
@@ -469,10 +483,12 @@ macports
 maertendmsft
 mahawar
 Markdig.Signed
+markdown.yml
 markekraus
 marktiedemann
 Marusyk
 MarvTheRobot
+matt9ucci
 mcbobke
 md
 meir017
@@ -485,6 +501,7 @@ miaromero
 microsoft
 Microsoft.ApplicationInsights
 Microsoft.CodeAnalysis.CSharp
+Microsoft.CodeAnalysis.NetAnalyzers
 microsoft.com
 microsoft.management.infrastructure.cimcmdlets
 microsoft.management.infrastructure.native
@@ -627,6 +644,7 @@ powershellgallery
 powershellget
 powershellmagazine.com
 powershellninja
+powershellpr0mpt
 powershellproperties
 ppadmavilasom
 pre-build
@@ -650,6 +668,7 @@ preview.5.20268.9
 preview.5.20272.6
 preview.6
 preview.6.20318.15
+preview.6.21355.2
 preview.7
 preview.7.20356.2
 preview.7.20358.6
@@ -700,6 +719,8 @@ RandomNoun7
 raspbian
 rc
 rc.1
+rc.1.21455.2
+rc.1.21458.32
 rc.2
 rc.3
 rc2-24027
@@ -715,6 +736,7 @@ receive-pssession
 recurse
 reddit
 redhat
+redirections
 redistributable
 redistributables
 register-argumentcompleter
@@ -762,6 +784,7 @@ rkitover
 robo210
 ronn
 rpalo
+rpolley
 runspace
 runspaceinit
 runspaces
@@ -804,6 +827,7 @@ set-wsmaninstance
 set-wsmanquickconfig
 sethvs
 setversionvariables
+sha256
 ShaydeNofziger
 shellexecute
 shouldbeerrorid
@@ -829,6 +853,7 @@ start-codecoveragerun
 start-pspester
 stdin
 stevel-msft
+StevenLiekens
 stevend811
 stknohg
 strawgate
@@ -838,6 +863,7 @@ string.split
 stringbuilder
 stuntguy3000
 StyleCop
+subfolder
 submodule
 submodules
 sudo
@@ -899,6 +925,7 @@ tracesource
 travisez13
 travisty
 truher
+TSAUpload
 TValue
 tylerleonhardt
 typecataloggen
@@ -917,6 +944,7 @@ unregister-pssessionconfiguration
 unregistering
 untracked
 unvalidated
+UpdateDotnetRuntime.ps1
 update-formatdata
 update-modulemanifest
 update-scriptfileinfo
@@ -1261,7 +1289,7 @@ package.json
 jcotton42
 RPMs
 PSDesiredStateConfiguration
- - CHANGELOG/preview.md
+ - CHANGELOG/7.2.md
 Gimly
 jborean93
 mkswd
@@ -1368,21 +1396,47 @@ msixbundle
 PowerShell-Native#70
 AppxManifest.xml
 preview.9
+preview.10
 ArmaanMcleod
 entrypoint
 lselden
 SethFalco
 CodeQL
 slowy07
+rc.2.21505.57
+ThirdPartyNotices.txt
+cgmanifest.json
+buildinfo
+tar.gz
+psoptions.json
+manifest.spdx.json
+vPack
+kondratyev-nv
+v7.2.0
+cgmanifest.json
+pwsh.exe
+6.0.100-rtm.21527.11
+6.0.100-rc.2.21505.57
+ThirdPartyNotices.txt
+rtm.21527.11
  - CHANGELOG/7.0.md
 codesign
 release-BuildJson
 yml
 centos-7
 PSDesiredStateConfiguration
+NoLanguage
+createdump
+vPack
+PkgES
  - test/perf/benchmarks/README.md
 benchmarked
 BenchmarkDotNet
  - docs/community/working-group-definitions.md
-TobiasPSP
+gaelcolas
 jdhitsolutions
+jhoneill
+kilasuit
+michaeltlombardi
+SeeminglyScience
+TobiasPSP

@@ -1329,7 +1329,8 @@ namespace System.Management.Automation
                         context.Options.Remove("LiteralPaths");
                 }
 
-                if (context.WordToComplete != string.Empty && context.WordToComplete.Contains('-'))
+                // The word to complete contains a dash and it's not the first character. We try command names in this case.
+                if (context.WordToComplete.IndexOf('-') > 0)
                 {
                     var commandResults = CompleteCommand(context);
                     if (commandResults != null)
@@ -7652,7 +7653,7 @@ namespace System.Management.Automation
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyNameCompleter"/> class.
         /// </summary>
-        /// <param name="parameterNameOfInput">The name of the property of the input object for witch to complete with property names.</param>
+        /// <param name="parameterNameOfInput">The name of the property of the input object for which to complete with property names.</param>
         public PropertyNameCompleter(string parameterNameOfInput)
         {
             _parameterNameOfInput = parameterNameOfInput;

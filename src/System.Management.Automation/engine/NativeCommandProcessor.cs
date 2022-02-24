@@ -545,15 +545,14 @@ namespace System.Management.Automation
             Exception exceptionToRethrow = null;
             try
             {
-                // If this process is being run standalone, tell the host, which might want
-                // to save off the window title or other such state as might be tweaked by
-                // the native process
+                // Before start the executable, tell the host, which might want to save off the
+                // window title or other such state as might be tweaked by the native process.
+                Command.Context.EngineHostInterface.NotifyBeginApplication();
+                _hasNotifiedBeginApplication = true;
+
                 if (_runStandAlone)
                 {
-                    this.Command.Context.EngineHostInterface.NotifyBeginApplication();
-                    _hasNotifiedBeginApplication = true;
-
-                    // Also, store the Raw UI coordinates so that we can scrape the screen after
+                    // Store the Raw UI coordinates so that we can scrape the screen after
                     // if we are transcribing.
                     if (_isTranscribing && (s_supportScreenScrape == true))
                     {
@@ -884,7 +883,7 @@ namespace System.Management.Automation
                         errorMsg,
                         errorId);
 
-                    var errorRecord = new ErrorRecord(exception, errorId, ErrorCategory.NotSpecified, targetObject: NativeCommandName);
+                    var errorRecord = new ErrorRecord(exception, errorId, ErrorCategory.NotSpecified, targetObject: Path);
                     this.commandRuntime._WriteErrorSkipAllowCheck(errorRecord);
                 }
             }
@@ -1101,15 +1100,9 @@ namespace System.Management.Automation
 #if UNIX
             return false;
 #else
-            if (!Platform.IsWindowsDesktop) { return false; }
-
-            // SHGetFileInfo() does not understand reparse points and returns 0 ("non exe or error")
-            // so we are trying to get a real path before.
-            // It is a workaround for Microsoft Store applications.
-            string realPath = Microsoft.PowerShell.Commands.InternalSymbolicLinkLinkCodeMethods.WinInternalGetTarget(fileName);
-            if (realPath is not null)
+            if (!Platform.IsWindowsDesktop)
             {
-                fileName = realPath;
+                return false;
             }
 
             SHFILEINFO shinfo = new SHFILEINFO();
@@ -1172,7 +1165,7 @@ namespace System.Management.Automation
             // We need to call 'NotifyEndApplication' as appropriate during cleanup
             if (_hasNotifiedBeginApplication)
             {
-                this.Command.Context.EngineHostInterface.NotifyEndApplication();
+                Command.Context.EngineHostInterface.NotifyEndApplication();
             }
 
             try
