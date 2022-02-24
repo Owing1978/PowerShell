@@ -16,6 +16,7 @@ using System.Management.Automation.Host;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
 using System.Management.Automation.Remoting;
+using System.Management.Automation.Remoting.Server;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Tracing;
 using System.Reflection;
@@ -193,30 +194,37 @@ namespace Microsoft.PowerShell
                 {
                     ApplicationInsightsTelemetry.SendPSCoreStartupTelemetry("ServerMode");
                     ProfileOptimization.StartProfile("StartupProfileData-ServerMode");
-                    System.Management.Automation.Remoting.Server.OutOfProcessMediator.Run(s_cpp.InitialCommand, s_cpp.WorkingDirectory);
-                    exitCode = 0;
-                }
-                else if (s_cpp.NamedPipeServerMode)
-                {
-                    ApplicationInsightsTelemetry.SendPSCoreStartupTelemetry("NamedPipe");
-                    ProfileOptimization.StartProfile("StartupProfileData-NamedPipeServerMode");
-                    System.Management.Automation.Remoting.RemoteSessionNamedPipeServer.RunServerMode(
-                        s_cpp.ConfigurationName);
+                    StdIOProcessMediator.Run(
+                        initialCommand: s_cpp.InitialCommand,
+                        workingDirectory: s_cpp.WorkingDirectory,
+                        configurationName: null);
                     exitCode = 0;
                 }
                 else if (s_cpp.SSHServerMode)
                 {
                     ApplicationInsightsTelemetry.SendPSCoreStartupTelemetry("SSHServer");
                     ProfileOptimization.StartProfile("StartupProfileData-SSHServerMode");
-                    System.Management.Automation.Remoting.Server.SSHProcessMediator.Run(s_cpp.InitialCommand);
+                    StdIOProcessMediator.Run(
+                        initialCommand: s_cpp.InitialCommand,
+                        workingDirectory: null,
+                        configurationName: null);
+                    exitCode = 0;
+                }
+                else if (s_cpp.NamedPipeServerMode)
+                {
+                    ApplicationInsightsTelemetry.SendPSCoreStartupTelemetry("NamedPipe");
+                    ProfileOptimization.StartProfile("StartupProfileData-NamedPipeServerMode");
+                    RemoteSessionNamedPipeServer.RunServerMode(
+                        configurationName: s_cpp.ConfigurationName);
                     exitCode = 0;
                 }
                 else if (s_cpp.SocketServerMode)
                 {
                     ApplicationInsightsTelemetry.SendPSCoreStartupTelemetry("SocketServerMode");
                     ProfileOptimization.StartProfile("StartupProfileData-SocketServerMode");
-                    System.Management.Automation.Remoting.Server.HyperVSocketMediator.Run(s_cpp.InitialCommand,
-                        s_cpp.ConfigurationName);
+                    HyperVSocketMediator.Run(
+                        initialCommand: s_cpp.InitialCommand,
+                        configurationName: s_cpp.ConfigurationName);
                     exitCode = 0;
                 }
                 else
@@ -425,7 +433,7 @@ namespace Microsoft.PowerShell
                     host.ShouldEndSession = shouldEndSession;
                 }
 
-                // Creation of the tread and starting it should be an atomic operation.
+                // Creation of the thread and starting it should be an atomic operation.
                 // otherwise the code in Run method can get instance of the breakhandlerThread
                 // after it is created and before started and call join on it. This will result
                 // in ThreadStateException.
@@ -1063,18 +1071,16 @@ namespace Microsoft.PowerShell
         {
             lock (hostGlobalLock)
             {
-                ++_beginApplicationNotifyCount;
-                if (_beginApplicationNotifyCount == 1)
+                if (++_beginApplicationNotifyCount == 1)
                 {
-                    // save the window title when first notified.
-
+                    // Save the window title when first notified.
                     _savedWindowTitle = ui.RawUI.WindowTitle;
 #if !UNIX
                     if (_initialConsoleMode != ConsoleControl.ConsoleModes.Unknown)
                     {
-                        var activeScreenBufferHandle = ConsoleControl.GetActiveScreenBufferHandle();
-                        _savedConsoleMode = ConsoleControl.GetMode(activeScreenBufferHandle);
-                        ConsoleControl.SetMode(activeScreenBufferHandle, _initialConsoleMode);
+                        var outputHandle = ConsoleControl.GetActiveScreenBufferHandle();
+                        _savedConsoleMode = ConsoleControl.GetMode(outputHandle);
+                        ConsoleControl.SetMode(outputHandle, _initialConsoleMode);
                     }
 #endif
                 }
@@ -1089,17 +1095,26 @@ namespace Microsoft.PowerShell
         {
             lock (hostGlobalLock)
             {
-                Dbg.Assert(_beginApplicationNotifyCount > 0, "Not running an executable - NotifyBeginApplication was not called!");
-                --_beginApplicationNotifyCount;
-                if (_beginApplicationNotifyCount == 0)
+                if (--_beginApplicationNotifyCount == 0)
                 {
-                    // restore the window title when the last application started has ended.
-
+                    // Restore the window title when the last application started has ended.
                     ui.RawUI.WindowTitle = _savedWindowTitle;
 #if !UNIX
                     if (_savedConsoleMode != ConsoleControl.ConsoleModes.Unknown)
                     {
                         ConsoleControl.SetMode(ConsoleControl.GetActiveScreenBufferHandle(), _savedConsoleMode);
+                        if (_savedConsoleMode.HasFlag(ConsoleControl.ConsoleModes.VirtualTerminal))
+                        {
+                            // If the console output mode we just set already has 'VirtualTerminal' turned on,
+                            // we don't need to try turn on the VT mode separately.
+                            return;
+                        }
+                    }
+
+                    if (ui.SupportsVirtualTerminal)
+                    {
+                        // Re-enable VT mode if it was previously enabled, as a native command may have turned it off.
+                        ui.TryTurnOnVirtualTerminal();
                     }
 #endif
                 }
@@ -2444,14 +2459,6 @@ namespace Microsoft.PowerShell
 
                 while (!_parent.ShouldEndSession && !_shouldExit)
                 {
-#if !UNIX
-                    if (ui.SupportsVirtualTerminal)
-                    {
-                        // need to re-enable VT mode if it was previously enabled as native commands may have turned it off
-                        ui.TryTurnOnVtMode();
-                    }
-#endif
-
                     try
                     {
                         _parent._isRunningPromptLoop = true;
