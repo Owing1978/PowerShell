@@ -1,8 +1,10 @@
 parameters:
   - name: pool
-    default: 'Hosted VS2017'
+    default: 'windows-latest'
   - name: jobName
     default: 'win_packaging'
+  - name: runtimePrefix
+    default: 'win7'
   - name: architecture
     default: 'x64'
   - name: channel
@@ -22,7 +24,7 @@ jobs:
       value: $(Agent.BuildDirectory)\$(complianceRepoFolder)
 
   pool:
-    name: ${{ parameters.pool }}
+    vmImage: ${{ parameters.pool }}
 
   displayName: Windows Packaging - ${{ parameters.architecture }} - ${{ parameters.channel }}
 
@@ -40,6 +42,12 @@ jobs:
     displayName: Capture environment
     condition: succeededOrFailed()
 
+  - pwsh: |
+      $PSVersionTable
+    displayName: Capture PowerShell Version Table
+    condition: succeededOrFailed()
+
+
   - template: /tools/releaseBuild/azureDevOps/templates/insert-nuget-config-azfeed.yml
 
   - pwsh: |
@@ -52,7 +60,7 @@ jobs:
   - pwsh: |
       Import-Module .\tools\ci.psm1
       New-CodeCoverageAndTestPackage
-      Invoke-CIFinish -Runtime win7-${{ parameters.architecture }} -channel ${{ parameters.channel }} -Stage Build
+      Invoke-CIFinish -Runtime ${{ parameters.runtimePrefix }}-${{ parameters.architecture }} -channel ${{ parameters.channel }} -Stage Build
     displayName: Build
     workingDirectory: $(repoPath)
 
@@ -61,10 +69,11 @@ jobs:
       BuildDropPath: '$(System.ArtifactsDirectory)/mainBuild'
       Build_Repository_Uri: $(build.repository.uri)
       displayName: SBOM
+      sourceScanPath: '$(repoPath)\tools'
 
   - pwsh: |
       Import-Module .\tools\ci.psm1
       New-CodeCoverageAndTestPackage
-      Invoke-CIFinish -Runtime win7-${{ parameters.architecture }} -channel ${{ parameters.channel }} -Stage Package
+      Invoke-CIFinish -Runtime ${{ parameters.runtimePrefix }}-${{ parameters.architecture }} -channel ${{ parameters.channel }} -Stage Package
     displayName: Package and Test
     workingDirectory: $(repoPath)
