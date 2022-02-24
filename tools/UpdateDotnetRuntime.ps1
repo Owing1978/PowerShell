@@ -79,7 +79,6 @@ function Update-PackageVersion {
         "$PSScriptRoot/packaging/projects/reference/Microsoft.PowerShell.ConsoleHost/Microsoft.PowerShell.ConsoleHost.csproj"
         "$PSScriptRoot/../src/"
         "$PSScriptRoot/../test/tools/"
-        "$PSScriptRoot/../test/perf/dotnet-tools/"
     )
 
     Get-ChildItem -Path $paths -Recurse -Filter "*.csproj" -Exclude 'PSGalleryModules.csproj', 'PSGalleryTestModules.csproj' | ForEach-Object {
@@ -189,7 +188,7 @@ function Get-DotnetUpdate {
     try {
 
         try {
-            $latestSDKVersionString = Invoke-RestMethod -Uri "http://aka.ms/dotnet/$channel/$quality/productVersion.txt" -ErrorAction Stop | ForEach-Object { $_.Trim() }
+            $latestSDKVersionString = Invoke-RestMethod -Uri "http://aka.ms/dotnet/$channel/$quality/sdk-productVersion.txt" -ErrorAction Stop | ForEach-Object { $_.Trim() }
             $selectedQuality = $quality
         } catch {
             if ($_.exception.Response.StatusCode -eq 'NotFound') {
@@ -201,7 +200,7 @@ function Get-DotnetUpdate {
 
         if (-not $latestSDKVersionString -or -not $latestSDKVersionString.StartsWith($sdkImageVersion)) {
             # we did not get a version number so fall back to daily
-            $latestSDKVersionString = Invoke-RestMethod -Uri "http://aka.ms/dotnet/$channel/$qualityFallback/productVersion.txt" -ErrorAction Stop | ForEach-Object { $_.Trim() }
+            $latestSDKVersionString = Invoke-RestMethod -Uri "http://aka.ms/dotnet/$channel/$qualityFallback/sdk-productVersion.txt" -ErrorAction Stop | ForEach-Object { $_.Trim() }
             $selectedQuality = $qualityFallback
 
             if (-not $latestSDKVersionString.StartsWith($sdkImageVersion)) {
@@ -338,9 +337,6 @@ if ($dotnetUpdate.ShouldUpdate) {
         Import-Module "$PSScriptRoot/packaging" -Force
         Start-PSBootstrap -Package
         Start-PSBuild -Clean -Configuration Release -CrossGen -InteractiveAuth:$InteractiveAuth
-
-        $publishPath = Split-Path (Get-PSOutput)
-        Remove-Item -Path "$publishPath\*.pdb"
 
         try {
             Start-PSPackage -Type msi -SkipReleaseChecks -InformationVariable wxsData
