@@ -10,6 +10,7 @@ jobs:
 - job: ${{ parameters.jobName }}
   displayName: ${{ parameters.displayName }}
   pool:
+    # test
     vmImage: ${{ parameters.imageName }}
   steps:
     - checkout: self
@@ -42,8 +43,10 @@ jobs:
         if(-not (Get-PackageSource -Name 'dotnet' -ErrorAction SilentlyContinue))
         {
             $nugetFeed = ([xml](Get-Content $(Build.SourcesDirectory)/nuget.config -Raw)).Configuration.packagesources.add | Where-Object { $_.Key -eq 'dotnet' } | Select-Object -ExpandProperty Value
-            Register-PackageSource -Name 'dotnet' -Location $nugetFeed -ProviderName NuGet
-            Write-Verbose -Message "Register new package source 'dotnet'" -verbose
+            if ($nugetFeed) {
+              Register-PackageSource -Name 'dotnet' -Location $nugetFeed -ProviderName NuGet
+              Write-Verbose -Message "Register new package source 'dotnet'" -verbose
+            }
         }
 
         ## Install latest version from the channel
@@ -96,6 +99,11 @@ jobs:
         $exeName = if ($IsWindows) { "pwsh.exe" } else { "pwsh" }
 
         $toolPath = "$(System.DefaultWorkingDirectory)/toolPath/${{ parameters.globalToolExeName }}"
+
+        $env:DOTNET_ROOT = if ($IsWindows) { "$env:LOCALAPPDATA\Microsoft\dotnet" } else { "$env:HOME/.dotnet" }
+
+        Write-Verbose -Verbose "DOTNET_ROOT: $env:DOTNET_ROOT"
+        Get-ChildItem $env:DOTNET_ROOT
 
         $versionFound = & $toolPath -c '$PSVersionTable.PSVersion.ToString()'
 
